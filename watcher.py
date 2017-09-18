@@ -95,7 +95,7 @@ def main(argv):
 
     base_dir = os.path.dirname(os.path.realpath(__file__))
 
-    print ("[ii] Laoding configuration.")
+    print ("[ii] Loading configuration.")
 
     try:
         with open(os.path.join(base_dir, 'settings.yaml'), 'r') as f:
@@ -106,7 +106,9 @@ def main(argv):
                 try:
                     logs_path = config_file['watcher']['logs_path']
                 except KeyError:
-                    logs_path = os.path.join(os.getenv("HOME"), '.wine', 'drive_c', 'users', os.getenv("LOGNAME"), 'My Documents', 'EVE', 'logs', 'Chatlogs')
+                    pass
+        if not logs_path:
+            logs_path = os.path.join(os.getenv("HOME"), '.wine', 'drive_c', 'users', os.getenv("LOGNAME"), 'My Documents', 'EVE', 'logs', 'Chatlogs')
         if not chat_name:
             raise RuntimeError("Can't get the chat name. Looks like 'chat_name' option is empty?")
     except KeyError as exp:
@@ -139,7 +141,7 @@ def main(argv):
         print ("[ii] + %s alers for system:" % level)
         for system in system_map[level]:
             print (" - %s" % system)
-    print ("[ii] Ok. Running monitor..")
+    print ("[ii] Ok. Running the monitor...")
     p = 0
     with open(l_file, 'rb') as f:
         while True:
