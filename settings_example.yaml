@@ -1,0 +1,17 @@
+# Set chat_name to Intel chat name as it is dispalyed in game:)
+# green, yellow, red -- are alert levels represented by corresponding sound
+# do not list the same systems in the different levels (well you can, but there is no need to)
+#
+# toy can specify patch to ChatLogs via 'logs_path' (if programm can't get it automatically)
+
+watcher:
+    system_map:
+        green:
+          - 'OJT-J3'
+        yellow:
+          - '8B-A4E'
+        red:
+          - 'RZ3O-K'
+          - 'AV2-O'
+          - '8SY-Q'
+    chat_name: 'SomeNoneName.Intel'

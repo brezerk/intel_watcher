@@ -1,0 +1,47 @@
+Simple Python utility to help you to survive in null sec space of EVE Online.
+It provides intel chat log analysis and sound notification application for EVE Online.
+
+Currently, works only on Linux :P
+
+If you need more advance tool, you can try https://github.com/Xanthos-Eve/vintel
+
+Requirements:
+***********************************************
+python >= 3.2
+pyyaml
+pulseaudio (libpulse-simple.so)
+
+Post-install:
+***********************************************
+
+You need to define your settings in the settings.yaml.
+See settings_example.yaml for details.
+
+Run tool:
+***********************************************
+
+chmod +x watcher.py
+./watcher.py
+
+* If tool can't find EVE log directory correctly:
+
+./watcher.py <full_path_to_Chatlogs_directory>
+
+CCP Copyright Notice
+***********************************************
+
+EVE Online, the EVE logo, EVE and all associated logos and designs are the intellectual property of CCP hf. All artwork, screenshots, characters, vehicles, storylines, world facts or other recognizable features of the intellectual property relating to these trademarks are likewise the intellectual property of CCP hf. EVE Online and the EVE logo are the registered trademarks of CCP hf. All rights are reserved worldwide. All other trademarks are the property of their respective owners. CCP is in no way responsible for the content on or functioning of this program, nor can it be liable for any damage arising from the use of this program.
+
+Changelog
+***********************************************
+
+Initial release
+
+--
+Regards,
+
+Oleksii S. Malakhov
+E-mail: brezerk@gmail.com
+Web-site: http://brezblock.org.ua/
+BrezBlock, Kiev, Ukraine
+
