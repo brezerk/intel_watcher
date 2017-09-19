@@ -7,6 +7,7 @@ import sys
 import time
 import glob
 import yaml
+import os
 
 pa = ctypes.cdll.LoadLibrary('libpulse-simple.so.0')
 
@@ -63,7 +64,7 @@ def play(filename):
         if latency == -1:
             raise Exception('Getting latency failed!')
 
-        print('{0} usec'.format(latency))
+        #print('{0} usec'.format(latency))
 
         # Reading frames and writing to the stream.
         buf = wf.readframes(BUFFSIZE)
@@ -108,7 +109,11 @@ def main(argv):
                 except KeyError:
                     pass
         if not logs_path:
-            logs_path = os.path.join(os.getenv("HOME"), '.wine', 'drive_c', 'users', os.getenv("LOGNAME"), 'My Documents', 'EVE', 'logs', 'Chatlogs')
+            # try to guess
+            logs_path = os.path.join(os.getenv("HOME"), 'Documents', 'EVE', 'logs', 'Chatlogs')
+            if not os.path.exists(logs_path):
+                logs_path = os.path.join(os.getenv("HOME"), '.wine', 'drive_c', 'users', os.getenv("LOGNAME"), 'My Documents', 'EVE', 'logs', 'Chatlogs')
+
         if not chat_name:
             raise RuntimeError("Can't get the chat name. Looks like 'chat_name' option is empty?")
     except KeyError as exp:
