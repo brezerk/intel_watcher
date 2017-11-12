@@ -9,8 +9,6 @@ import glob
 import yaml
 import os
 
-pa = ctypes.cdll.LoadLibrary('libpulse-simple.so.0')
-
 PA_STREAM_PLAYBACK = 1
 PA_SAMPLE_S16LE = 3
 BUFFSIZE = 1024
@@ -29,65 +27,67 @@ struct_pa_sample_spec._fields_ = [
 ]
 pa_sample_spec = struct_pa_sample_spec  # /usr/include/pulse/sample.h:174
 
-def play(filename):
-    """Play a WAV file with PulseAudio."""
+class pa_playback(object):
+    def __init__(self):
+        self.pa = ctypes.cdll.LoadLibrary('libpulse-simple.so.0')
+        self.s = None
+        # Defining sample format.
+        self.ss = struct_pa_sample_spec()
+        self.ss.format = PA_SAMPLE_S16LE
+        with wave.open(os.path.join(os.path.dirname(os.path.realpath(__file__)), "wav", "red.wav"), 'rb') as wf:
+            self.ss.rate = wf.getframerate()
+            self.ss.channels = wf.getnchannels()
+        self.error = ctypes.c_int(0)
 
-    # Opening a file.
-    wf = wave.open(filename, 'rb')
+    def create(self):
+        # Creating a new playback stream.
+        self.s = self.pa.pa_simple_new(
+            None,  # Default server.
+            'watcher',  # Application's name.
+            PA_STREAM_PLAYBACK,  # Stream for playback.
+            None,  # Default device.
+            'playback',  # Stream's description.
+            ctypes.byref(self.ss),  # Sample format.
+            None,  # Default channel map.
+            None,  # Default buffering attributes.
+            ctypes.byref(self.error)  # Ignore error code.
+        )
+        if not self.s:
+            raise Exception('Could not create pulse audio stream: {0}!'.format(
+                self.pa.strerror(ctypes.byref(self.error))))
 
-    # Defining sample format.
-    ss = struct_pa_sample_spec()
-    ss.rate = wf.getframerate()
-    ss.channels = wf.getnchannels()
-    ss.format = PA_SAMPLE_S16LE
-    error = ctypes.c_int(0)
+    def play(self, filename):
+        """Play a WAV file with PulseAudio."""
 
-    # Creating a new playback stream.
-    s = pa.pa_simple_new(
-        None,  # Default server.
-        filename,  # Application's name.
-        PA_STREAM_PLAYBACK,  # Stream for playback.
-        None,  # Default device.
-        'playback',  # Stream's description.
-        ctypes.byref(ss),  # Sample format.
-        None,  # Default channel map.
-        None,  # Default buffering attributes.
-        ctypes.byref(error)  # Ignore error code.
-    )
-    if not s:
-        raise Exception('Could not create pulse audio stream: {0}!'.format(
-            pa.strerror(ctypes.byref(error))))
+        # Opening a file.
+        with wave.open(filename, 'rb') as wf:
+            while True:
+                # Getting latency.
+                latency = self.pa.pa_simple_get_latency(self.s, self.error)
+                if latency == -1:
+                    raise Exception('Getting latency failed!')
 
-    while True:
-        # Getting latency.
-        latency = pa.pa_simple_get_latency(s, error)
-        if latency == -1:
-            raise Exception('Getting latency failed!')
+                # Reading frames and writing to the stream.
+                buf = wf.readframes(BUFFSIZE)
+                if buf == '':
+                    break
 
-        #print('{0} usec'.format(latency))
+                if self.pa.pa_simple_write(self.s, buf, len(buf), self.error):
+                    return
 
-        # Reading frames and writing to the stream.
-        buf = wf.readframes(BUFFSIZE)
-        if buf == '':
-            break
+        # Waiting for all sent data to finish playing.
+        if self.pa.pa_simple_drain(s, error):
+            raise Exception('Could not simple drain!')
 
-        if pa.pa_simple_write(s, buf, len(buf), error):
-            return
-            #raise Exception('Could not play file!')
-
-    wf.close()
-
-    # Waiting for all sent data to finish playing.
-    if pa.pa_simple_drain(s, error):
-        raise Exception('Could not simple drain!')
-
-    # Freeing resources and closing connection.
-    pa.pa_simple_free(s)
+        # Freeing resources and closing connection.
+        self.pa.pa_simple_free(self.s)
 
 
 def main(argv):
     system_map = None
     chat_name = None
+    playback_system = pa_playback()
+    playback_system.create()
 
     try:
         logs_path = sys.argv[1:][0]
@@ -158,7 +158,7 @@ def main(argv):
                     for system in system_map[level]:
                         if system in latest_data:
                             print ("-ALERT- %s" % level)
-                            play(os.path.join(base_dir, "wav", "%s.wav" % level))
+                            playback_system.play(os.path.join(base_dir, "wav", "%s.wav" % level))
                 print (latest_data)
             else:
                 time.sleep(1)
