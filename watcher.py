@@ -38,15 +38,17 @@ class pa_playback(object):
             self.ss.rate = wf.getframerate()
             self.ss.channels = wf.getnchannels()
         self.error = ctypes.c_int(0)
+        self.pa_app_name = ctypes.c_char_p("intel_watcher".encode('utf-8'))
+        self.pa_stream_name = ctypes.c_char_p("alerts".encode('utf-8'))
 
     def create(self):
         # Creating a new playback stream.
         self.s = self.pa.pa_simple_new(
             None,  # Default server.
-            'watcher',  # Application's name.
+            self.pa_app_name,  # Application's name.
             PA_STREAM_PLAYBACK,  # Stream for playback.
             None,  # Default device.
-            'playback',  # Stream's description.
+            self.pa_stream_name,  # Stream's description.
             ctypes.byref(self.ss),  # Sample format.
             None,  # Default channel map.
             None,  # Default buffering attributes.
